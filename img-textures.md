@@ -17,15 +17,15 @@ function webGLTextureFromImageUrl(gl, url, loadedCallback) {
 }
 ```
 
-But if you go searching through the [WebGPU spec](https://gpuweb.github.io/gpuweb/), you'll notice very quickly that there's no mention of `HTMLImageElement` anywhere, nor is there anything about how to generate mipmaps. So how exactly do we load images as textures with WebGPU, and preferrably how do we do it as efficiently as possible? That's what this doc is here to tell you!
+But if you go searching through the [WebGPU spec](https://gpuweb.github.io/gpuweb/), you'll notice very quickly that there's no mention of `HTMLImageElement` anywhere, nor is there anything about how to generate mipmaps. So how exactly do we load images as textures with WebGPU, and preferably how do we do it as efficiently as possible? That's what this doc is here to tell you!
 
 ## Prefer compressed formats when possible!
 
 Before we begin, it is worth mentioning that, while not the focus of this document, you should **strongly** consider using compressed texture formats when doing graphics work on the web, and specifically a format that can be transcoded to support multiple different platforms like [Basis Universal](https://github.com/BinomialLLC/basis_universal). Compressed formats take up significantly less space on the GPU, upload faster, can help with caching performance, and frequently can be delivered in a file about the same size as a JPG. If you are in control of your application's assets there is very little reason not to use compressed textures.
 
-The mechanics of how to load compressed textures is beyond the scope of this document (I'll probably write a separate doc about it), but you can use libraries such as my [Web Texture Tool library](https://github.com/toji/web-texture-tool) to handle both compressed and uncompressed textures seamlessly and efficently.
+The mechanics of how to load compressed textures is beyond the scope of this document (I'll probably write a separate doc about it), but you can use libraries such as my [Web Texture Tool library](https://github.com/toji/web-texture-tool) to handle both compressed and uncompressed textures seamlessly and efficiently.
 
-That being said, there are still plenty valid reasons for needing to load uncompessed images. For example, you may not have full control over where your assets are coming from. If you were displaying a gallery of images from another page, for example, you'll need to consume the images in whatever format they were originally posted. Similarly you may have a page that displays user-supplied 3D models which have embedded images in them for textures. In these cases there are still a variety of best practices to follow to handle the textures as efficiently as possible, which is the focus of this document.
+That being said, there are still plenty of valid reasons for needing to load uncompressed images. For example, you may not have full control over where your assets are coming from. If you were displaying a gallery of images from another page, for example, you'll need to consume the images in whatever format they were originally posted. Similarly you may have a page that displays user-supplied 3D models which have embedded images in them for textures. In these cases there are still a variety of best practices to follow to handle the textures as efficiently as possible, which is the focus of this document.
 
 ## Comparing `<img>` formats
 
@@ -33,11 +33,11 @@ For this document we're focusing on loading browser-native image formats as text
 
 Of these, it's only really practical to use JPG, PNG, and WEBP for graphics work.
 
- - **WEBP** Should be preferred for it's small size, it's ability to be lossy or lossless, and transparency support. Previously it wasn't as widely supported as the other image formats, but any browser that supports WebGPU will have WEBP support as well.
+ - **WEBP** Should be preferred for its small size, its ability to be lossy or lossless, and transparency support. Previously it wasn't as widely supported as the other image formats, but any browser that supports WebGPU will have WEBP support as well.
  - **PNG** Will frequently have bigger file sizes but is lossless, supports transparency, and has widespread support in tools.
  - **JPG** doesn't support transparency and is similar in size to WEBP files, but it's the most ubiquitous image format around.
 
-**GIF**s may seem attractive for their animation support, but the quality is very poor, especially when compared to the file size. Also, there is no programatic way to control which GIF frame will be copied to the texture, so using it for an animated texture is not practical. Use video formats for this use case instead.
+**GIF**s may seem attractive for their animation support, but the quality is very poor, especially when compared to the file size. Also, there is no programmatic way to control which GIF frame will be copied to the texture, so using it for an animated texture is not practical. Use video formats for this use case instead.
 
 **BMP** has no redeeming qualities whatsoever. You technically _can_ load them as textures, but just... don't.
 
@@ -45,11 +45,11 @@ Of these, it's only really practical to use JPG, PNG, and WEBP for graphics work
 
 So, you have an image in one of the above formats, how do you make a WebGPU texture out of it?
 
-Rather than accepting an `HTMLImageElement` directly, WebGPU is designed to accept an [`ImageBitmap`](https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmap) instead. This can help with the performance of your page, because creating an `ImageBitmap` causes the image data to be decoded into an GPU-friendly format, and it does so off the main thread.
+Rather than accepting an `HTMLImageElement` directly, WebGPU is designed to accept an [`ImageBitmap`](https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmap) instead. This can help with the performance of your page, because creating an `ImageBitmap` causes the image data to be decoded into a GPU-friendly format, and it does so off the main thread.
 
 Once you have an `ImageBitmap`, you can use it to set the contents of a WebGPU texture through the [`device.queue.copyExternalImageToTexture()`](https://gpuweb.github.io/gpuweb/#dom-gpuqueue-copyexternalimagetotexture) method.
 
-With that in mind, if you are starting with a URL of the image that you want load, the best way to get an `ImageBitmap` is not actually to use an `HTMLImageElement` to load the image! Instead, it's more efficent to use the [`fetch()`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) API to download the image as a [`Blob`](https://developer.mozilla.org/en-US/docs/Web/API/Blob)". `Blob`s are one of the options you can pass to [`createImageBitmap()`](https://developer.mozilla.org/en-US/docs/Web/API/createImageBitmap), which makes our replacement for the code above very straightforward:
+With that in mind, if you are starting with a URL of the image that you want to load, the best way to get an `ImageBitmap` is not actually to use an `HTMLImageElement` to load the image! Instead, it's more efficient to use the [`fetch()`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) API to download the image as a [`Blob`](https://developer.mozilla.org/en-US/docs/Web/API/Blob)". `Blob`s are one of the options you can pass to [`createImageBitmap()`](https://developer.mozilla.org/en-US/docs/Web/API/createImageBitmap), which makes our replacement for the code above very straightforward:
 
 ```js
 // Defining this as a separate function because we'll be re-using it a lot.
@@ -117,7 +117,7 @@ Which sounds like a lot of different edge cases to handle, until you realize tha
 
 We can ignore the difference between external URIs and data URIs, because `fetch()` will handle them for us silently. `fetch()` will helpfully download the image if the URL points to another location, and decode the image if it's given as a data URI and you, as the developer, don't really have to care which was which. 
 
-If, on the other hand, your are given a glTF [BufferView](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-bufferview) and a MIME type, you can construct a `Blob` directly from that. All together it looks something like this:
+If, on the other hand, you are given a glTF [BufferView](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-bufferview) and a MIME type, you can construct a `Blob` directly from that. All together it looks something like this:
 
 ```js
 async function webGPUTextureFromGLTFImage(gpuDevice, gltfJson, imageIndex) {
@@ -142,9 +142,9 @@ async function webGPUTextureFromGLTFImage(gpuDevice, gltfJson, imageIndex) {
 }
 ```
 
-## Creating a texture from a `HTMLCanvasElement` (`<canvas>` tag) or `OffscreenCanvas`
+## Creating a texture from an `HTMLCanvasElement` (`<canvas>` tag) or `OffscreenCanvas`
 
-Another common place you may want to pull texture contents from is a Canvas (either a `HTMLCanvasElement` or `OffscreenCanvas`). Using the contents of a `2d` canvas as a texture can be a great way to generate textures programatically or render text, for example.
+Another common place you may want to pull texture contents from is a Canvas (either an `HTMLCanvasElement` or `OffscreenCanvas`). Using the contents of a `2d` canvas as a texture can be a great way to generate textures programmatically or render text, for example.
 
 Canvases are already able to be passed to `createImageBitmap()`, so at first glance it may seem like the best way to create an image from a canvas is to once again get an `ImageBitmap` and use the same approach as above. We can actually take a shortcut in this case, however!
 
@@ -160,19 +160,19 @@ The browser can take a fast path copying content from the canvas because it almo
 
 _Important note: this only applies to canvases with WebGL or Canvas2D contexts._
 
-## Creating a texture from a `HTMLVideoElement` (`<video>` tag);
+## Creating a texture from an `HTMLVideoElement` (`<video>` tag);
 
-One final common source of textures is a video tag. As with Canvases, you _can_ pass an `<video>` element to `createImageBitmap()` and populate a texture with the resulting `ImageBitmap`. And in some cases, such as if you only want to capture a single frame of the video, it's your best option. Given that display video as a texture is such a common case, however, and by it's nature requires frequent updating, a fast path specifically for video was added to WebGPU in the form of the [`device.importExternalTexture()`](https://gpuweb.github.io/gpuweb/#dom-gpudevice-importexternaltexture) method.
+One final common source of textures is a video tag. As with Canvases, you _can_ pass a `<video>` element to `createImageBitmap()` and populate a texture with the resulting `ImageBitmap`. And in some cases, such as if you only want to capture a single frame of the video, it's your best option. Given that display video as a texture is such a common case, however, and by its nature requires frequent updating, a fast path specifically for video was added to WebGPU in the form of the [`device.importExternalTexture()`](https://gpuweb.github.io/gpuweb/#dom-gpudevice-importexternaltexture) method.
 
 ```js
 // This one is so simple it doesn't even warrant a helper function!
 const texture = gpuDevice.importExternalTexture({ source: video });
 ```
 
-`importExternalTexture()` returns a `GPUExternalTexture`, which can be sampled like a texture in your shaders (with some limits, more on that in a moment). It can't, however, have it contents changed, copied from, or otherwise manipulated. This restriction allows the browser to implement `importExternalTexture()` without creating a copy of the video frame, which can represent a big performance boost and memory savings!
+`importExternalTexture()` returns a `GPUExternalTexture`, which can be sampled like a texture in your shaders (with some limits, more on that in a moment). It can't, however, have its contents changed, copied from, or otherwise manipulated. This restriction allows the browser to implement `importExternalTexture()` without creating a copy of the video frame, which can represent a big performance boost and memory savings!
 
 Also, due to how browsers implement `GPUExternalTextures` they have some special needs regarding how they're used in shaders. When
-declaring the binding the type needs to be `texture_external` and sampling needs to happen with the `textureSampleLevel()` function explicitly. (`GPUExternalTextures` hav no mipmaps to sample from.)
+declaring the binding the type needs to be `texture_external` and sampling needs to happen with the `textureSampleLevel()` function explicitly. (`GPUExternalTextures` have no mipmaps to sample from.)
 
 A simple fragment shader that uses an external texture looks like this:
 
@@ -188,7 +188,7 @@ fn fragMain([[location(1)]] texCoord : vec2<f32>) -> [[location(0)]] vec4<f32> {
 
 ## GPUExternalTexture lifetime
 
-Finally, it's important to understand the lifetime of a `GPUExternalTexture` object: Because it attempts to not create a copy of the video frame in question, the contents of a `GPUExternalTexture` would dissapear when the video advances to the next frame. Because the exact timing of video frames is a non-trivial thing to keep track of, WebGPU simplifies things by tightly controlling the external texture's lifetime. The spec says:
+Finally, it's important to understand the lifetime of a `GPUExternalTexture` object: Because it attempts to not create a copy of the video frame in question, the contents of a `GPUExternalTexture` would disappear when the video advances to the next frame. Because the exact timing of video frames is a non-trivial thing to keep track of, WebGPU simplifies things by tightly controlling the external texture's lifetime. The spec says:
 
 ```
 External textures are destroyed automatically, as a microtask, instead of manually or upon garbage collection like other resources.
@@ -320,7 +320,7 @@ This may seem like a lot of hoops to jump through, but when used properly `GPUEx
 
 ## Generating Mipmaps
 
-You may have notcied that in all of the above examples one thing that's not addressed is handling mipmaps. In WebGL, once you loaded a texture if you wanted mipmaps (so your texture doesn't look like a shimmery mess from far away) you just called:
+You may have noticed that in all of the above examples one thing that's not addressed is handling mipmaps. In WebGL, once you loaded a texture if you wanted mipmaps (so your texture doesn't look like a shimmery mess from far away) you just called:
 
 ```js
 gl.generateMipmap(GL.TEXTURE_2D);
