@@ -14,3 +14,4 @@ with WebGL or one of the native APIs. If you're interested in learning WebGPU, c
 ## Best Practices
  
  - [WebGPU &lt;img&gt;, &lt;canvas&gt;, and &lt;video&gt; texture best practices](./img-textures.md) - Covers loading textures from images, canvases, and video elements.
+ - [WebGPU buffer upload best practices](./buffer-uploads.md) - Covers pushing data to any type of WebGPU buffer.
