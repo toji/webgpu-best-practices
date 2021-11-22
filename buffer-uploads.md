@@ -48,8 +48,7 @@ In summary, the advantages of using `writeBuffer()` are:
  - Avoids the need to set the contents of a mapped buffer's array to zero before returning it.
  - Allows the user agent to pick an (presumably optimal) pattern for uploading the data to the GPU.
 
-The (fairly minor) disadvantages to this path are:
- - Requires that the buffer is created with `COPY_DST` usage.
+And really, there's not any explicit downsides to using this path. Depending on the exact usage pattern you may be able to write a more custom buffer management system that gets better performance in one situation or another, but `writeBuffer()` is an extremely solid catch-all solution for setting buffer data.
 
 Here's an example of using `writeBuffer()`. You can see the code is very brief:
 
