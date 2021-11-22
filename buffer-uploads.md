@@ -30,13 +30,13 @@ And a similar path is used to read data back from GPU accessible memory:
 
 As you'll see, some of the methods below hide some of these steps by making them implicit, but you can generally assume that's what's happening behind the scenes in most cases.
 
-So, with that established, let's look as some more concrete methods of getting data into GPU accessible buffers in different scenarios.
+So, with that established, let's look at some more concrete methods of getting data into GPU accessible buffers in different scenarios.
 
 ## When in doubt, `writeBuffer()`!
 
 The very first thing to establish is that if you ever have a question about what the best way is to get data into a partiuclar buffer, the `writeBuffer()` method is always a safe fallback that doesn't have many downsides.
 
-`writeBuffer()` is a convenience method on `GPUQueue` that copies values from an `ArrayBuffer` into a `GPUBuffer` in whatever way the user agent deems best. Generally this will be a fairly efficeint path, and in some cases it can be the _most_ efficient path! (In most cases the user agent will manage an implicit staging buffer for you when you call `writeBuffer()`, but on some architectures it's feasible that it could skip that step.)
+`writeBuffer()` is a convenience method on `GPUQueue` that copies values from an `ArrayBuffer` into a `GPUBuffer` in whatever way the user agent deems best. Generally this will be a fairly efficient path, and in some cases it can be the _most_ efficient path! (In most cases the user agent will manage an implicit staging buffer for you when you call `writeBuffer()`, but on some architectures it's feasible that it could skip that step.)
 
 Specifically, if you are using WebGPU from WASM code, `writeBuffer()` is the preferred path. This is because WASM apps would need to perform an additional copy from the WASM heap when you use a mapped buffer.
 
@@ -201,6 +201,6 @@ If you want to see these techniques (and a few others) at work in the real world
 
 ## Have fun, and make cool stuff!
 
-The variety of patterns that can be used to get data onto the GPU can make this area of WebGPU feel confusing and possibly a bit intimidating, but it doesn't have to be! The number one thing to keep in mind is that this flexibility exists to offer high end, professional apps a way to tightly control their performance. For the average WebGPU developer you can and should start off by using the easiest approaches: calling `writeBuffer()` to update buffers and maybe using `mappedAtCreation` for buffers that only need to be set once. **These aren't "dumbed down" helper functions! They're the reccomended, high performance route that just so happens to also be the simplest to write.** Only try to get fancier if you see that writing to buffers is a bottleneck for you application and you can identify an alternative technique that works well for your use case.
+The variety of patterns that can be used to get data onto the GPU can make this area of WebGPU feel confusing and possibly a bit intimidating, but it doesn't have to be! The number one thing to keep in mind is that this flexibility exists to offer high end, professional apps a way to tightly control their performance. For the average WebGPU developer you can and should start off by using the easiest approaches: calling `writeBuffer()` to update buffers and maybe using `mappedAtCreation` for buffers that only need to be set once. **These aren't "dumbed down" helper functions! They're the recommended, high performance route that just so happens to also be the simplest to write.** Only try to get fancier if you see that writing to buffers is a bottleneck for your application and you can identify an alternative technique that works well for your use case.
 
 Good luck on whatever projects are ahead of you, I can't wait to see what the spectacularly creative web community builds!
