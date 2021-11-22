@@ -30,7 +30,7 @@ And a similar path is used to read data back from GPU accessible memory:
 
 As you'll see, some of the methods below hide some of these steps by making them implicit, but you can generally assume that's what's happening behind the scenes in most cases.
 
-So, with that established, let's look as some more concrete methods of getting data into GPU accessible buffers in different scenarios.
+So, with that established, let's look at some more concrete methods of getting data into GPU accessible buffers in different scenarios.
 
 ## When in doubt, `writeBuffer()`!
 
@@ -200,6 +200,6 @@ If you want to see these techniques (and a few others) at work in the real world
 
 ## Have fun, and make cool stuff!
 
-The variety of patterns that can be used to get data onto the GPU can make this area of WebGPU feel confusing and possibly a bit intimidating, but it doesn't have to be! The number one thing to keep in mind is that this flexibility exists to offer high end, professional apps a way to tightly control their performance. For the average WebGPU developer you can and should start off by using the easiest approaches: calling `writeBuffer()` to update buffers and maybe using `mappedAtCreation` for buffers that only need to be set once. **These aren't "dumbed down" helper functions! They're the reccomended, high performance route that just so happens to also be the simplest to write.** Only try to get fancier if you see that writing to buffers is a bottleneck for you application and you can identify an alternative technique that works well for your use case.
+The variety of patterns that can be used to get data onto the GPU can make this area of WebGPU feel confusing and possibly a bit intimidating, but it doesn't have to be! The number one thing to keep in mind is that this flexibility exists to offer high end, professional apps a way to tightly control their performance. For the average WebGPU developer you can and should start off by using the easiest approaches: calling `writeBuffer()` to update buffers and maybe using `mappedAtCreation` for buffers that only need to be set once. **These aren't "dumbed down" helper functions! They're the recommended, high performance route that just so happens to also be the simplest to write.** Only try to get fancier if you see that writing to buffers is a bottleneck for your application and you can identify an alternative technique that works well for your use case.
 
 Good luck on whatever projects are ahead of you, I can't wait to see what the spectacularly creative web community builds!
