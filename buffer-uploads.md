@@ -14,7 +14,7 @@ On some devices, like a phone, these may in fact be the same memory pool. On oth
 
 This means that all data going into GPU accessible memory will take approximately the same path:
  
- - A "staging" buffer is created with CPU accessible memory that can be written to and copied from. (usage: GPUBufferUsage.MAP_WRITE | GPUBufferUsage.COPY_SRC)
+ - A "staging" buffer is created with CPU accessible memory that can be written to and copied from. (usage: GPUBufferUsage.MAP_WRITE &#124; GPUBufferUsage.COPY_SRC)
  - The staging buffer is mapped for writing (via `mapAsync()`), which makes it's memory writable as a [JavaScript `ArrayBuffer`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer).
  - Data is placed in the array buffer.
  - The staging buffer is unmapped.
@@ -22,7 +22,7 @@ This means that all data going into GPU accessible memory will take approximatel
 
 And a similar path is used to read data back from GPU accessible memory:
 
- - A "staging" buffer is created with CPU accessible memory that can be copied to and read from. (usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST)
+ - A "staging" buffer is created with CPU accessible memory that can be copied to and read from. (usage: GPUBufferUsage.MAP_READ &#124; GPUBufferUsage.COPY_DST)
  - A copy command (ie: `copyBufferToBuffer()` or `copyTextureToBuffer()`) is used to copy the data out of a GPU accessible destination and into the staging buffer.
  - The staging buffer is mapped for reading (via `mapAsync()`), which makes it's memory readable as a JavaScript `ArrayBuffer`.
  - The data is read out of the array buffer.
