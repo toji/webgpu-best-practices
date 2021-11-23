@@ -10,7 +10,7 @@ Before we get into the mechanics of setting buffer data, though, let's talk abou
 
 In general, you can consider WebGPU to be working with two types of memory: Memory that is GPU accessible and memory that is CPU accessible and able to efficiently copy to the GPU accessible memory. Any time you want to access data from a shader (vertex, fragment, or compute) it _must_ be in GPU accessible memory, and any time you want to access data from JavaScript it _must_ be in CPU accessible memory. Buffers can be either GPU or CPU accessible, but not both, and Textures are always only GPU accessible.
 
-On some devices, like a phone, these may in fact be the same memory pool. On others, like a PC with a discreet graphics card, they may be on different physical boards and only able to communicate across a PCIe bus or similar. Becase we're developing for the web, we want to be able to write a single code path that works on the widest array of devices. As a result WebGPU does not differentiate between those memory configurations in the same way that, say, Vulkan does. Everything is treated as if it has distinct CPU and GPU memory pools, and it's up to the WebGPU implementation to optimize for specific architectures where it can.
+On some devices, like a phone, these may in fact be the same memory pool. On others, like a PC with a discrete graphics card, they may be on different physical boards and only able to communicate across a PCIe bus or similar. Becase we're developing for the web, we want to be able to write a single code path that works on the widest array of devices. As a result WebGPU does not differentiate between those memory configurations in the same way that, say, Vulkan does. Everything is treated as if it has distinct CPU and GPU memory pools, and it's up to the WebGPU implementation to optimize for specific architectures where it can.
 
 This means that all data going into GPU accessible memory will take approximately the same path:
  
@@ -36,7 +36,7 @@ So, with that established, let's look as some more concrete methods of getting d
 
 The very first thing to establish is that if you ever have a question about what the best way is to get data into a partiuclar buffer, the `writeBuffer()` method is always a safe fallback that doesn't have many downsides.
 
-`writeBuffer()` is a convenience method on `GPUQueue` that copies values from an `ArrayBuffer` into a `GPUBuffer` in whatever way the user agent deems best. Generally this will be a fairly efficeint path, and in some cases it can be the _most_ efficient path! (In most cases the user agent will manage an implicit staging buffer for you when you call `writeBuffer()`, but on some architectures it's feasible that it could skip that step.)
+`writeBuffer()` is a convenience method on `GPUQueue` that copies values from an `ArrayBuffer` into a `GPUBuffer` in whatever way the user agent deems best. Generally this will be a fairly efficient path, and in some cases it can be the _most_ efficient path! (In most cases the user agent will manage an implicit staging buffer for you when you call `writeBuffer()`, but on some architectures it's feasible that it could skip that step.)
 
 Specifically, if you are using WebGPU from WASM code, `writeBuffer()` is the preferred path. This is because WASM apps would need to perform an additional copy from the WASM heap when you use a mapped buffer.
 
@@ -120,7 +120,7 @@ function createXYPlaneVertexBuffer(width, height) {
 
 ## Buffers that are written to frequently
 
-If you have buffers that change frequently (such as once per frame) then updaing them efficiently is slightly more complicated. Though before we go any further it should be noted that in many cases using `writeBuffer()` will be a perfectly acceptable path to take from a performance perspective!
+If you have buffers that change frequently (such as once per frame) then updating them efficiently is slightly more complicated. Though before we go any further it should be noted that in many cases using `writeBuffer()` will be a perfectly acceptable path to take from a performance perspective!
 
 Applications that want to have more explicit control over their memory usage, though, can use what's known as a staging buffer ring. This technique uses a rotating set of staging buffers and to continuously "feed" a GPU accessible buffer with new data. Each time the data is updated it first checks to see if a previously used staging buffer is already mapped and ready to use, and if so writes the data into that. If not, a new staging buffer is created with mappedAtCreation set to true so that it can immedately be populated. After the data is copied GPU-side the staging buffer is immedately mapped again, and once the mapping is complete it's placed in the queue of buffers which are ready for use. If the buffer data is updated frequently this typically results in a list of 2-3 staging buffers that are cycled through.
 
