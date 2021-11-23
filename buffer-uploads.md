@@ -10,7 +10,7 @@ Before we get into the mechanics of setting buffer data, though, let's talk abou
 
 In general, you can consider WebGPU to be working with two types of memory: Memory that is GPU accessible and memory that is CPU accessible and able to efficiently copy to the GPU accessible memory. Any time you want to access data from a shader (vertex, fragment, or compute) it _must_ be in GPU accessible memory, and any time you want to access data from JavaScript it _must_ be in CPU accessible memory. Buffers can be either GPU or CPU accessible, but not both, and Textures are always only GPU accessible.
 
-On some devices, like a phone, these may in fact be the same memory pool. On others, like a PC with a discreet graphics card, they may be on different physical boards and only able to communicate across a PCIe bus or similar. Because we're developing for the web, we want to be able to write a single code path that works on the widest array of devices. As a result WebGPU does not differentiate between those memory configurations in the same way that, say, Vulkan does. Everything is treated as if it has distinct CPU and GPU memory pools, and it's up to the WebGPU implementation to optimize for specific architectures where it can.
+On some devices, like a phone, these may in fact be the same memory pool. On others, like a PC with a discrete graphics card, they may be on different physical boards and only able to communicate across a PCIe bus or similar. Because we're developing for the web, we want to be able to write a single code path that works on the widest array of devices. As a result WebGPU does not differentiate between those memory configurations in the same way that, say, Vulkan does. Everything is treated as if it has distinct CPU and GPU memory pools, and it's up to the WebGPU implementation to optimize for specific architectures where it can.
 
 This means that all data going into GPU accessible memory will take approximately the same path:
  
@@ -30,7 +30,7 @@ And a similar path is used to read data back from GPU accessible memory:
 
 As you'll see, some of the methods below hide some of these steps by making them implicit, but you can generally assume that's what's happening behind the scenes in most cases.
 
-So, with that established, let's look as some more concrete methods of getting data into GPU accessible buffers in different scenarios.
+So, with that established, let's look at some more concrete methods of getting data into GPU accessible buffers in different scenarios.
 
 ## When in doubt, `writeBuffer()`!
 
@@ -48,8 +48,7 @@ In summary, the advantages of using `writeBuffer()` are:
  - Avoids the need to set the contents of a mapped buffer's array to zero before returning it.
  - Allows the user agent to pick an (presumably optimal) pattern for uploading the data to the GPU.
 
-The (fairly minor) disadvantages to this path are:
- - Requires that the buffer is created with `COPY_DST` usage.
+And really, there's not any explicit downsides to using this path. Depending on the exact usage pattern you may be able to write a more custom buffer management system that gets better performance in one situation or another, but `writeBuffer()` is an extremely solid catch-all solution for setting buffer data.
 
 Here's an example of using `writeBuffer()`. You can see the code is very brief:
 
@@ -201,6 +200,6 @@ If you want to see these techniques (and a few others) at work in the real world
 
 ## Have fun, and make cool stuff!
 
-The variety of patterns that can be used to get data onto the GPU can make this area of WebGPU feel confusing and possibly a bit intimidating, but it doesn't have to be! The number one thing to keep in mind is that this flexibility exists to offer high end, professional apps a way to tightly control their performance. For the average WebGPU developer you can and should start off by using the easiest approaches: calling `writeBuffer()` to update buffers and maybe using `mappedAtCreation` for buffers that only need to be set once. **These aren't "dumbed down" helper functions! They're the recommended, high performance route that just so happens to also be the simplest to write.** Only try to get fancier if you see that writing to buffers is a bottleneck for you application and you can identify an alternative technique that works well for your use case.
+The variety of patterns that can be used to get data onto the GPU can make this area of WebGPU feel confusing and possibly a bit intimidating, but it doesn't have to be! The number one thing to keep in mind is that this flexibility exists to offer high end, professional apps a way to tightly control their performance. For the average WebGPU developer you can and should start off by using the easiest approaches: calling `writeBuffer()` to update buffers and maybe using `mappedAtCreation` for buffers that only need to be set once. **These aren't "dumbed down" helper functions! They're the recommended, high performance route that just so happens to also be the simplest to write.** Only try to get fancier if you see that writing to buffers is a bottleneck for your application and you can identify an alternative technique that works well for your use case.
 
 Good luck on whatever projects are ahead of you, I can't wait to see what the spectacularly creative web community builds!
