@@ -153,7 +153,7 @@ const waveGridStagingBuffers = [];
 function updateWaveGrid(time) {
   // Get a new or re-used staging buffer that's already mapped.
   let stagingBuffer;
-  if (readyStagingBuffers.length) {
+  if (waveGridStagingBuffers.length) {
     stagingBuffer = waveGridStagingBuffers.pop();
   } else {
     stagingBuffer = gpuDevice.createBuffer({
@@ -197,6 +197,10 @@ While it's beyond the scope of this document, I'd be remiss if I didn't mention 
 ## Real world example
 
 If you want to see these techniques (and a few others) at work in the real world, you should check out my [WebGPU Metaballs demo](https://toji.github.io/webgpu-metaballs/). Use the "metaballMethod" drop-down to select the buffer population method to use, though don't expect to see much performance difference between them (with the exception of the compute shader method.) You can also see the [code for each of the techniques](https://github.com/toji/webgpu-metaballs/blob/main/js/webgpu-renderer/webgpu-metaball-renderer.js#L137), with comments explaining each. It also details a couple more patterns not covered here, primarily because the circumstances in which they'd be the most efficient path are pretty rare.
+
+## Further reading
+
+If you want to learn more about the mechanics of buffer use, I'd recommend looking through the [WebGPU Explainer](https://gpuweb.github.io/gpuweb/explainer/#buffer-mapping) and relevant bits of the [WebGPU spec](https://gpuweb.github.io/gpuweb/#buffers). The spec, in particular, isn't exactly what I'd call "light reading" but it describes the expected behavior of WebGPU buffers in great detail.
 
 ## Have fun, and make cool stuff!
 
