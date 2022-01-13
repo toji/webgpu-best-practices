@@ -144,7 +144,7 @@ Here's an example of how a staging buffer ring could work setting vertex data:
 const waveGridSize = 1024;
 const waveGridBufferSize = waveGridSize * waveGridSize * 3 * Float32Array.BYTES_PER_ELEMENT;
 const waveGridVertexBuffer = gpuDevice.createBuffer({
-  waveGridBufferSize,
+  size: waveGridBufferSize,
   usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
 });
 const waveGridStagingBuffers = [];
