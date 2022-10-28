@@ -518,9 +518,9 @@ function renderScene(passEncoder) {
 }
 ```
 
-While this _will_ draw the meshes correctly, it's not the most efficient way to do it, because there's a lot of repeated setting of the same state. Again, even though a subset of the bind group resources are unchanged between calls to `setBindGroup()`, you shouldn't count on the implementation/driver to optimize that away for you. Even if it _was_ taken care of by the driver on one platform it probably won't be on all of them.
+While this _will_ draw the meshes correctly, it's not the most efficient way to do it because there's a lot of repeated setting of the same state. Again, even though a subset of the bind group resources are unchanged between calls to `setBindGroup()`, you shouldn't count on the implementation/driver to optimize that away for you. Even if it _was_ taken care of by the driver on one platform it probably won't be on all of them.
 
-So what's the solution? Split the resources into groups based on the frequency of how often then need to change. The camera uniforms don't change for the entirety of the render pass, so they can be in their own bind group. Material properties change semi-frequently, but not for every mesh, so they can go into another bind group. And finally, the model matrix is different for every draw call, so it belongs in yet another bind group.
+So what's the solution? We can split the resources into groups based on the frequency of how often they need to change. The camera uniforms don't change for the entirety of the render pass, so they can be in their own bind group. Material properties change semi-frequently, but not for every mesh, so they can go into separate bind group. And finally, the model matrix is different for every draw call, so it belongs in yet another bind group.
 
 This results in an updates shader that looks like this. Pay close attention to the changes in the `@group` and `@binding` indices:
 
@@ -612,7 +612,7 @@ const pipelineD = gpuDevice.createRenderPipeline({
 });
 ```
 
-And finally, the bind groups themselves need to be created with the new groupings. This time we will also create them with an eye towards reducing duplication. Additionally, we should take the opportunity during the setup of the bind groups to sort our meshes in a way that will reduce the amount of bind group setting that we need to do during the render loop:
+And finally, the bind groups themselves need to be created with the new groupings. This time we will also create them with an eye towards reducing duplication. Additionally, we'll take the opportunity to sort our meshes in a way that will reduce the amount of bind group setting that we need to do during the render loop:
 
 ```js
 const cameraBindGroup;
@@ -629,7 +629,7 @@ function createSceneBindGroups(meshes) {
   });
 
   for (const mesh of meshes) {
-    // Find or create an renderableMaterials entry for the meshes material.
+    // Find or create a renderableMaterials entry for the mesh's material.
     // renderableMaterials will contain the bind group and associated meshes for
     // each material.
     let renderableMaterial = renderableMaterials.get(mesh.material);
@@ -651,7 +651,8 @@ function createSceneBindGroups(meshes) {
       renderableMaterials.set(mesh.material, renderableMaterial);
     }
 
-    renderableMaterials.meshes.push(mesh);
+    // Store meshes grouped by the material that they use.
+    renderableMaterial.meshes.push(mesh);
 
     // Create a bind group for the mesh's transform
     mesh.bindGroup = gpuDevice.createBindGroup({
@@ -685,17 +686,17 @@ function renderScene(passEncoder) {
 }
 ```
 
-You can see that the above code establishes a kind of heirarchy of state changes, with the values that change least frequently being set at the very top of the function and then working into progressively tighter loops that each represent respectively more frequently changing values. In broad terms, this is the pattern that you want to strive for when performing any sort of rendering or compute operations in WebGPU: Set state as infrequently as possible, and break state up based on how frequently it changes.
+You can see that the above code establishes a kind of heirarchy of state changes, with the values that change least frequently being set at the very top of the function and then working into progressively tighter loops that each represent more frequently changing values. In broad terms, this is the type of pattern that you want to strive for when performing any sort of rendering or compute operations in WebGPU: Set state as infrequently as possible, and break state up based on how frequently it changes.
 
-Note that many WebGPU implementations will be limited to 4 bind groups at a time (check `limits.` on the `GPUAdapter` to determine the system's actual limit, and pass the desired count in when calling `requestDevice()` to raise the limit in your own application.) This should be enough for most cases, though. The separation of bind groups into "Per Frame/Per Material/Per Draw" state as seen above is quite common.
+Note that many WebGPU implementations will be limited to 4 bind groups at a time (check [`limits.maxBindGroups`](https://gpuweb.github.io/gpuweb/#dom-supported-limits-maxbindgroups) on the `GPUAdapter` to determine the system's actual limit, and pass the desired count in when calling `requestDevice()` to raise the limit in your own application.) This should be enough for most cases, though. The separation of bind groups into "Per Frame/Per Material/Per Draw" state as seen above is quite common.
 
 ## Group indices matter
 
-The WebGPU API is technically agnostic to the order that bind groups are declared in and the order that `setBindGroup()` is called in. Placing the camera bind group at `@group(2)` and the model bind group at `@group(0)` works as expected. However, the underlying native APIs may have preferences about the order that the groups are declared and set in for performance purposes. Thus, to ensure the best performance across the board, you should prefer to have `@group(0)` contain the values that change least frequently between draw/dispatch calls, and each subsequent `@group` index represent contain data that changes at a higher frequency.
+The WebGPU API is technically agnostic to the order that bind groups are declared in and the order that `setBindGroup()` is called in. Placing the camera bind group at `@group(2)` and the model bind group at `@group(0)` works as expected. However, the underlying native APIs may have preferences about the order that the groups are declared and set in for performance purposes. Thus, to ensure the best performance across the board, you should prefer to have `@group(0)` contain the values that change least frequently between draw/dispatch calls, and each subsequent `@group` index contain data that changes at progressively higher frequencies.
 
 ## Reusing pipeline layouts
 
-In some cases you may find that you have a pipeline that doesn't make use of an entire bind group, but otherwise could share bind group state with other pipelines in your application.
+In some cases you may find that you have a pipeline that doesn't make use of a bind group, but otherwise could share bind group state with other pipelines in your application.
 
 For example, let's take another look at the shader above that didn't make use of the texture and sampler now that we're splitting the bind groups up. You can see that if we remove the unused `@binding`s we're left with a gap in the group indices:
 
