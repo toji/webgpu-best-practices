@@ -98,7 +98,7 @@ async function webGPUTextureFromImageElement(gpuDevice, imgElement) {
       });
       imgElement.addEventListener('error', reject);
     });
-  });
+  };
 }
 ```
 
