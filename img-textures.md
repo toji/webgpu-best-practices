@@ -177,11 +177,11 @@ declaring the binding the type needs to be `texture_external` and sampling needs
 A simple fragment shader that uses an external texture looks like this:
 
 ```ts
-[[group(0), binding(0)]] var externalTexture : texture_external;
-[[group(0), binding(1)]] var textureSampler : sampler;
+@group(0) @binding(0) var externalTexture : texture_external;
+@group(0) @binding(1) var textureSampler : sampler;
 
-[[stage(fragment)]]
-fn fragMain([[location(1)]] texCoord : vec2<f32>) -> [[location(0)]] vec4<f32> {
+@fragment
+fn fragMain(@location(1) texCoord : vec2<f32>) -> @location(0) vec4<f32> {
   return textureSampleLevel(externalTexture, textureSampler, texCoord);
 }
 ```
@@ -348,23 +348,23 @@ function webGPUGenerateMipmap(gpuDevice, texture, textureDescriptor) {
         vec2<f32>(-1.0, -1.0), vec2<f32>(1.0, -1.0));
 
       struct VertexOutput {
-        [[builtin(position)]] position : vec4<f32>;
-        [[location(0)]] texCoord : vec2<f32>;
+        @builtin(position) position : vec4<f32>;
+        @location(0) texCoord : vec2<f32>;
       };
 
-      [[stage(vertex)]]
-      fn vertexMain([[builtin(vertex_index)]] vertexIndex : u32) -> VertexOutput {
+      @vertex
+      fn vertexMain(@builtin(vertex_index) vertexIndex : u32) -> VertexOutput {
         var output : VertexOutput;
         output.texCoord = pos[vertexIndex] * vec2<f32>(0.5, -0.5) + vec2<f32>(0.5);
         output.position = vec4<f32>(pos[vertexIndex], 0.0, 1.0);
         return output;
       }
 
-      [[binding(0), group(0)]] var imgSampler : sampler;
-      [[binding(1), group(0)]] var img : texture_2d<f32>;
+      @group(0) @binding(0) var imgSampler : sampler;
+      @group(0) @binding(1) var img : texture_2d<f32>;
 
-      [[stage(fragment)]]
-      fn fragmentMain([[location(0)]] texCoord : vec2<f32>) -> [[location(0)]] vec4<f32> {
+      @fragment
+      fn fragmentMain(@location(0) texCoord : vec2<f32>) -> @location(0) vec4<f32> {
         return textureSample(img, imgSampler, texCoord);
       }
     `
