@@ -16,6 +16,7 @@ with WebGL or one of the native APIs. If you're interested in learning WebGPU, c
  - [WebGPU &lt;img&gt;, &lt;canvas&gt;, and &lt;video&gt; texture best practices](./img-textures.md) - Covers loading textures from images, canvases, and video elements.
  - [WebGPU buffer upload best practices](./buffer-uploads.md) - Covers pushing data to any type of WebGPU buffer.
  - [WebGPU Bind Group best practices](./bind-groups.md) - Explains why bind groups are structured the way they are and how to make the best use of them.
+ - [WebGPU dynamic shader construction](./dynamic-shader-construction.md) - Covers patterns for compensating for WGSLs lack of preprocessor statements when building out shader variants.
 
 
 I've also written a much, much longer article about efficiently displaying glTF files in WebGPU. It's not necessarily a "best practices" doc, but it contains many useful WebGPU tips and patterns nonetheless, as well as working samples!
